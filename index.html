@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>LENTERA DESA - Kabupaten Pemalang</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#1e3a8a">
+<link rel="icon" href="https://i.imgur.com/jr8apj9.png">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0f172a; }
+  iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+  #muat { position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+          background: #0f172a; color: #e2e8f0; font: 600 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; text-align: center; padding: 24px; transition: opacity .35s; }
+  #muat.selesai { opacity: 0; pointer-events: none; }
+  #muat img { width: 72px; height: 72px; border-radius: 16px; }
+  .spin { width: 30px; height: 30px; border: 3px solid #334155; border-top-color: #38bdf8; border-radius: 50%; animation: p 0.9s linear infinite; }
+  @keyframes p { to { transform: rotate(360deg); } }
+  #lambat { display: none; font-weight: 400; font-size: 13px; color: #94a3b8; }
+  #lambat a { color: #7dd3fc; }
+</style>
+</head>
+<body>
+<div id="muat">
+  <img src="https://i.imgur.com/jr8apj9.png" alt="">
+  <div>LENTERA DESA</div>
+  <div class="spin"></div>
+  <div id="lambat">Masih memuat... Jika tidak muncul, <a id="langsung" href="#" target="_top">buka langsung</a>.</div>
+</div>
+<iframe id="app" title="LENTERA DESA" allow="clipboard-write; fullscreen" allowfullscreen referrerpolicy="no-referrer"></iframe>
+<noscript><p style="color:#fff;padding:24px;font-family:sans-serif">Aktifkan JavaScript untuk membuka LENTERA DESA.</p></noscript>
+
+<script>
+(function () {
+  'use strict';
+  /* === UBAH SATU BARIS INI bila alamat Apps Script berganti (Deploy > Kelola deployment > Aplikasi web) === */
+  var EXEC = 'https://script.google.com/macros/s/AKfycbyYMVvuW7_auxO_0iG_H6b4XLN9eo2LgB_6eVSDgNPxv8i18gozhD5V__JZJ6n9GqlbTw/exec';
+
+  var frame = document.getElementById('app'), muat = document.getElementById('muat'), lambat = document.getElementById('lambat');
+  var BASE = location.origin + location.pathname;   // mis. https://lenteradesa.github.io/pemalang/
+  var timer = null;
+
+  function mulai(qs) {                               // qs = "?page=app&t=..." (diteruskan apa adanya ke aplikasi)
+    var tujuan = EXEC + (qs || '');
+    document.getElementById('langsung').href = tujuan;
+    muat.classList.remove('selesai'); muat.style.display = 'flex'; lambat.style.display = 'none';
+    clearTimeout(timer); timer = setTimeout(function () { lambat.style.display = 'block'; }, 15000);
+    frame.src = tujuan;
+  }
+  frame.addEventListener('load', function () {
+    clearTimeout(timer);
+    muat.classList.add('selesai');
+    setTimeout(function () { if (muat.classList.contains('selesai')) muat.style.display = 'none'; }, 400);
+  });
+
+  // Pesan dari aplikasi (hanya dari domain Google yang menjalankan aplikasi)
+  window.addEventListener('message', function (e) {
+    var host; try { host = new URL(e.origin).hostname; } catch (x) { return; }
+    if (!/(^|\.)googleusercontent\.com$/.test(host) && host !== 'script.google.com') return;
+    var d = e.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.lentera === 'go' && typeof d.url === 'string') {
+      var qs; try { qs = new URL(d.url, BASE).search; } catch (x) { return; }   // hanya bagian ?parameter yang dipakai
+      history.replaceState(null, '', BASE + qs);
+      mulai(qs);
+    } else if (d.lentera === 'fullscreen') {
+      var el = document.documentElement;
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (el.requestFullscreen) { el.requestFullscreen().catch(function () {}); }
+    }
+  });
+
+  mulai(location.search);                           // buka tautan apa pun (login, undangan, pembayaran) lewat alamat ini
+})();
+</script>
+</body>
+</html>
